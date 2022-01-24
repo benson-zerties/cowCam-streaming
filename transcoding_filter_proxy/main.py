@@ -59,17 +59,18 @@ def getStartMethod(cam_manager, timeout):
             if cam_id1 in cam_list:
                 # cam id valid -> start streaming
                 cam_manager.start_cam(cam_id1)
-                start.timers[cam_id1] = \
-                    RestartableTimer(timeout, 
+                # if timeout == 0, never stop streaming
+                if timeout != 0:
+                    start.timers[cam_id1] = \
+                        RestartableTimer(timeout,
                                      lambda: (cam_manager.stop_cam(cam_id1)))
-                start.timers[cam_id1].start()
+                    start.timers[cam_id1].start()
                 return "cam_started"
         else:
             start.timers[cam_id1].restart()
 
     start.timers = dict()
-    # if timeout == 0, never stop streaming
-    return None if timeout == 0 else start
+    return start
 
 def handle_json(cam_manager, response_mgr, msg_dispatcher, message):
     """Callback function, called if new message is received."""
